@@ -1,14 +1,10 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
-
 import filesize from 'filesize';
-
 import Header from '../../components/Header';
 import FileList from '../../components/FileList';
 import Upload from '../../components/Upload';
-
 import { Container, Title, ImportFileContainer, Footer } from './styles';
-
 import alert from '../../assets/alert.svg';
 import api from '../../services/api';
 
@@ -23,19 +19,31 @@ const Import: React.FC = () => {
   const history = useHistory();
 
   async function handleUpload(): Promise<void> {
-    // const data = new FormData();
+    if (!uploadedFiles[0]) return;
 
-    // TODO
+    const data = new FormData();
+    data.append('csv', uploadedFiles[0].file, uploadedFiles[0].name);
 
     try {
-      // await api.post('/transactions/import', data);
+      await api.post('/transactions/import', data);
+      history.goBack();
     } catch (err) {
-      // console.log(err.response.error);
+      console.log(err.response.error);
     }
   }
 
   function submitFile(files: File[]): void {
-    // TODO
+    const [file] = files;
+
+    const fileProps = [
+      {
+        file,
+        name: file.name,
+        readableSize: filesize(file.size),
+      },
+    ];
+
+    setUploadedFiles(fileProps);
   }
 
   return (
@@ -46,7 +54,6 @@ const Import: React.FC = () => {
         <ImportFileContainer>
           <Upload onUpload={submitFile} />
           {!!uploadedFiles.length && <FileList files={uploadedFiles} />}
-
           <Footer>
             <p>
               <img src={alert} alt="Alert" />
